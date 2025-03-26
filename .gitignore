@@ -1,0 +1,53 @@
+# LLM Model Files
+*.gguf
+*.bin
+*.model
+*.weights
+*.params
+
+# Xcode
+build/
+DerivedData/
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
+xcuserdata/
+*.moved-aside
+!README moved-aside
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Carthage
+Carthage/Build/
+
+# CocoaPods
+Pods/
+*.xcscmblueprint
+
+# Swift Package Manager
+.build/
+
+# Distribution
+*.ipa
+
+# Local development settings
+.xcconfig
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

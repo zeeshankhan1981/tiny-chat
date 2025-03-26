@@ -1,0 +1,15 @@
+{
+  "originHash" : "5f995cd9e734f694584ce767e4b5249e8bfad196c42378a8e44f4aa89cdab07d",
+  "pins" : [
+    {
+      "identity" : "llamaforked",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/yyyoungman/llamaforked",
+      "state" : {
+        "branch" : "master",
+        "revision" : "c00d9587c9ae475d986a8aa73e6bd750a4bb08fa"
+      }
+    }
+  ],
+  "version" : 3
+}
