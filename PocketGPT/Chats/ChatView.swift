@@ -1,133 +1,99 @@
+//
 //  ChatView.swift
 //  PocketGPT
+//
 
 import SwiftUI
 
 struct ChatView: View {
     @EnvironmentObject var aiChatModel: AIChatModel
-
-    @State var placeholderString: String = "Message"
-    enum FocusedField { case firstName, lastName }
-
     @Binding var chat_title: String?
-    @State private var reload_button_icon: String = "arrow.counterclockwise.circle"
+
     @State private var scrollProxy: ScrollViewProxy? = nil
-    @State private var scrollTarget: Int?
-    @State private var toggleEditChat = false
     @State private var clearChatAlert = false
-
-    @FocusState private var focusedField: FocusedField?
-    @Namespace var bottomID
     @FocusState private var isInputFieldFocused: Bool
-
-    func scrollToBottom(with_animation: Bool = false) {
-        var scroll_bug = true
-        #if os(macOS)
-        scroll_bug = false
-        #else
-        if #available(iOS 16.4, *) {
-            scroll_bug = false
-        }
-        #endif
-        if scroll_bug { return }
-
-        if aiChatModel.messages.last != nil, let scrollProxy = scrollProxy {
-            if with_animation {
-                withAnimation {
-                    scrollProxy.scrollTo("latest")
-                }
-            } else {
-                scrollProxy.scrollTo("latest")
-            }
-        }
-    }
-
-    func reload() {
-        guard let chat_title else { return }
-        print("\nreload\n")
-
-        if chat_title == "Chat" {
-            placeholderString = "Message"
-        } else if chat_title == "Image Creation" {
-            placeholderString = "Describe the image"
-        }
-        aiChatModel.prepare(chat_title: chat_title)
-    }
-
-    private func delayIconChange() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            reload_button_icon = "arrow.counterclockwise.circle"
-        }
-    }
-
-    private var starOverlay: some View {
-        Button {
-            Task { scrollToBottom() }
-        } label: {
-            Image(systemName: "arrow.down.circle")
-                .resizable()
-                .foregroundColor(.white)
-                .frame(width: 25, height: 25)
-                .padding([.bottom, .trailing], 15)
-                .opacity(0.4)
-        }
-        .buttonStyle(BorderlessButtonStyle())
-    }
+    @Namespace var bottomID
 
     var body: some View {
-        VStack {
-            ScrollViewReader { scrollView in
-                VStack {
-                    List {
-                        ForEach(aiChatModel.messages, id: \ .id) { message in
-                            MessageView(message: message).id(message.id)
+        VStack(spacing: 0) {
+            ScrollViewReader { proxy in
+                ScrollView {
+                    VStack(spacing: 12) {
+                        ForEach(aiChatModel.messages, id: \.id) { message in
+                            MessageView(message: message)
+                                .id(message.id)
+                                .padding(.horizontal)
                         }
-                        .listRowSeparator(.hidden)
-                        Text("").id("latest")
+                        Color.clear.frame(height: 1).id("latest")
                     }
-                    .listStyle(PlainListStyle())
-                }
-                .onChange(of: aiChatModel.AI_typing) { _ in
-                    scrollToBottom(with_animation: false)
+                    .padding(.vertical, 12)
                 }
                 .onAppear {
-                    scrollProxy = scrollView
-                    scrollToBottom(with_animation: false)
-                    focusedField = .firstName
+                    scrollProxy = proxy
+                    scrollToBottom(animated: false)
+                }
+                .onChange(of: aiChatModel.messages) { _ in
+                    scrollToBottom(animated: true)
+                }
+                .onChange(of: isInputFieldFocused) { focused in
+                    if focused {
+                        scrollToBottom(animated: true)
+                    }
+                }
+                .onChange(of: chat_title) { _ in
+                    Task {
+                        await reload()
+                    }
                 }
             }
-            .frame(maxHeight: .infinity)
-            .onChange(of: chat_title) { _ in
-                Task { self.reload() }
-            }
-            .toolbar {
-                Button {
+
+            Divider()
+
+            LLMTextInput(messagePlaceholder: placeholderFor(chat_title))
+                .environmentObject(aiChatModel)
+                .focused($isInputFieldFocused)
+                .padding()
+                .background(.ultraThinMaterial)
+        }
+        .navigationTitle(chat_title ?? "Chat")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(role: .destructive) {
                     clearChatAlert = true
                 } label: {
                     Image(systemName: "trash")
                 }
-                .alert("Conversation history will be deleted", isPresented: $clearChatAlert) {
-                    Button("Cancel", role: .cancel, action: {})
-                    Button("Proceed", role: .destructive) {
-                        aiChatModel.messages = []
-                        FileHelper.clear_chat_history(aiChatModel.chat_name)
-                    }
-                } message: {
-                    Text("The message history will be cleared")
-                }
             }
+        }
+        .alert("Conversation history will be deleted", isPresented: $clearChatAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                aiChatModel.messages = []
+                FileHelper.clear_chat_history(aiChatModel.chat_name)
+            }
+        } message: {
+            Text("This will clear the current conversation.")
+        }
+    }
 
-            LLMTextInput(messagePlaceholder: placeholderString)
-                .environmentObject(aiChatModel)
-                .focused($focusedField, equals: .firstName)
+    private func placeholderFor(_ title: String?) -> String {
+        switch title {
+        case "Image Creation": return "Describe the image"
+        default: return "Message"
         }
-        .onChange(of: aiChatModel.messages) { _ in
-            scrollToBottom()
-        }
-        .onChange(of: isInputFieldFocused) { focused in
-            if focused {
-                scrollToBottom(with_animation: true)
+    }
+
+    private func scrollToBottom(animated: Bool = true) {
+        DispatchQueue.main.async {
+            withAnimation(animated ? .easeOut(duration: 0.25) : nil) {
+                scrollProxy?.scrollTo("latest", anchor: .bottom)
             }
         }
+    }
+
+    private func reload() async {
+        guard let chat_title else { return }
+        aiChatModel.prepare(chat_title: chat_title)
     }
 }
