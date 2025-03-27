@@ -1,9 +1,5 @@
-//
-//  ChatView.swift
-//  PocketGPT
-//
-
 import SwiftUI
+import UIKit
 
 struct ChatView: View {
     @EnvironmentObject var aiChatModel: AIChatModel
@@ -17,12 +13,10 @@ struct ChatView: View {
     var body: some View {
         VStack(spacing: 0) {
             ScrollViewReader { proxy in
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 12) {
                         ForEach(aiChatModel.messages, id: \.id) { message in
-                            MessageView(message: message)
-                                .id(message.id)
-                                .padding(.horizontal)
+                            ChatBubbleView(message: message)
                         }
                         Color.clear.frame(height: 1).id("latest")
                     }
@@ -41,6 +35,7 @@ struct ChatView: View {
                     }
                 }
                 .onChange(of: chat_title) { _ in
+                    // Swift 6-safe reloading
                     Task {
                         await reload()
                     }
@@ -49,6 +44,7 @@ struct ChatView: View {
 
             Divider()
 
+            // Removed `onSend:` which is not a valid parameter
             LLMTextInput(messagePlaceholder: placeholderFor(chat_title))
                 .environmentObject(aiChatModel)
                 .focused($isInputFieldFocused)
@@ -77,14 +73,18 @@ struct ChatView: View {
         }
     }
 
-    private func placeholderFor(_ title: String?) -> String {
+    // MARK: - Helper Functions
+
+    func placeholderFor(_ title: String?) -> String {
         switch title {
-        case "Image Creation": return "Describe the image"
-        default: return "Message"
+        case "Image Creation":
+            return "Describe the image"
+        default:
+            return "Message"
         }
     }
 
-    private func scrollToBottom(animated: Bool = true) {
+    func scrollToBottom(animated: Bool = true) {
         DispatchQueue.main.async {
             withAnimation(animated ? .easeOut(duration: 0.25) : nil) {
                 scrollProxy?.scrollTo("latest", anchor: .bottom)
@@ -92,8 +92,42 @@ struct ChatView: View {
         }
     }
 
-    private func reload() async {
+    func reload() async {
         guard let chat_title else { return }
         aiChatModel.prepare(chat_title: chat_title)
+    }
+
+    func triggerHapticFeedback() {
+        let generator = UIImpactFeedbackGenerator(style: .light)
+        generator.impactOccurred()
+    }
+}
+
+// MARK: - Chat Bubble Extracted
+
+struct ChatBubbleView: View {
+    let message: Message
+
+    var body: some View {
+        HStack {
+            if message.sender == .user {
+                Spacer()
+                Text(message.text)
+                    .padding()
+                    .background(Color.blue.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(12)
+                    .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .trailing)
+            } else {
+                Text(message.text)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(12)
+                    .frame(maxWidth: UIScreen.main.bounds.width * 0.75, alignment: .leading)
+                Spacer()
+            }
+        }
+        .padding(.horizontal)
     }
 }

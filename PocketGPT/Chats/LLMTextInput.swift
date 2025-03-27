@@ -1,44 +1,34 @@
-//
-//  LLMTextInput.swift
-//  PocketGPT
-//
-//
-
 import SwiftUI
 import PhotosUI
 
 public struct MessageInputViewHeightKey: PreferenceKey {
-    /// Default height of 0.
-    ///
-    public static var defaultValue: CGFloat = 0
-    
+    public static let defaultValue: CGFloat = 0  // ✅ FIXED
 
-    
-    /// Writes the received value to the `PreferenceKey`.
     public static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = nextValue()
     }
 }
 
+// MARK: - View Modifiers
 
-/// View modifier to write the height of a `View` to the ``MessageInputViewHeightKey`` SwiftUI `PreferenceKey`.
 extension View {
     func messageInputViewHeight(_ value: CGFloat) -> some View {
         self.preference(key: MessageInputViewHeightKey.self, value: value)
     }
-}
 
-extension View {
     func hideKeyboard() {
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
 
-public struct LLMTextInput: View {
+// MARK: - LLMTextInput View
 
+public struct LLMTextInput: View {
     private let messagePlaceholder: String
+    private let onSend: (() -> Void)?  // ✅ Optional callback for haptics or logging
+
     @EnvironmentObject var aiChatModel: AIChatModel
-    @State public var input_text = ""
+    @State private var input_text = ""
     @State private var isRecording = false
     @State private var isProcessing = false
 
@@ -50,45 +40,51 @@ public struct LLMTextInput: View {
                     .padding(.horizontal)
                     .background(Color.clear)
                     .frame(minHeight: 44)
-                
+
                 Button(action: {
-                    if !input_text.isEmpty {
-                        Task { @MainActor in
-                            isProcessing = true
-                            await aiChatModel.send(message: input_text)
-                            input_text = ""
-                            isProcessing = false
-                        }
-                    }
+                    sendMessage()
                 }) {
                     Image(systemName: "paperplane.fill")
                         .padding(8)
                 }
+                .disabled(input_text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
             .padding(.vertical, 8)
             .background(Color(.systemBackground))
             .cornerRadius(12)
-            .padding()
-            
+            .padding(.horizontal)
+
             if isProcessing {
                 ProgressView()
             }
         }
         .background(Color.clear)
     }
-    
-    /// - Parameters:
-    ///   - chat: The chat that should be appended to.
-    ///   - messagePlaceholder: Placeholder text that should be added in the input field
-    public init(
-//        _ chat: Binding<Chat>,
-        messagePlaceholder: String? = nil
-    ) {
-//        self._chat = chat
+
+    // MARK: - Send Action
+
+    @MainActor
+    private func sendMessage() {
+        guard !input_text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        Task {
+            isProcessing = true
+            await aiChatModel.send(message: input_text)
+            input_text = ""
+            isProcessing = false
+            onSend?() // ✅ Trigger haptics or callback
+        }
+    }
+
+    // MARK: - Initializer
+
+    public init(messagePlaceholder: String? = nil, onSend: (() -> Void)? = nil) {
         self.messagePlaceholder = messagePlaceholder ?? "Message"
+        self.onSend = onSend
     }
 }
 
 #Preview {
     LLMTextInput()
+        .environmentObject(AIChatModel())
 }

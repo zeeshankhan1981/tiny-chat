@@ -375,6 +375,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = PocketGPT/PocketGPT.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -384,7 +385,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PocketGPT/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = PocketGPT;
+				INFOPLIST_KEY_CFBundleDisplayName = TinyChat;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access for selecting images";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access for voice input";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save photo to library";
@@ -404,7 +405,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zeeshankhan.TinyLlamaPersonal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -414,6 +415,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = PocketGPT/PocketGPT.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -423,7 +425,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = PocketGPT/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = PocketGPT;
+				INFOPLIST_KEY_CFBundleDisplayName = TinyChat;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Camera access for selecting images";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Microphone access for voice input";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save photo to library";
@@ -443,7 +445,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.zeeshankhan.TinyLlamaPersonal;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
