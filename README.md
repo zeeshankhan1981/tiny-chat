@@ -8,6 +8,15 @@ An iOS app that runs Tiny Llama 1.1B Chat model locally on your device for text-
 - All processing runs entirely on-device without internet connection
 - Optimized for mobile performance
 - Maintains chat history
+- Modern, intuitive UI with improved message display
+- Enhanced app icon set for all device sizes
+
+## UI Improvements
+
+- Redesigned chat interface with better message layout
+- Optimized message bubbles for better readability
+- Improved app icon set for all device sizes
+- Enhanced visual feedback during model loading
 
 ## Model
 
@@ -98,6 +107,7 @@ The script will download the Tiny Llama model and place it in the correct locati
 - Model loading time: ~30 seconds
 - Response generation: ~1-2 seconds per response
 - Memory usage: ~1.5GB during active chat
+- UI response time: < 100ms for user interactions
 
 ## Security
 
