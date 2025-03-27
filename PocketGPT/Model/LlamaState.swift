@@ -15,8 +15,7 @@ class LlamaState: ObservableObject {
     let NS_PER_S = 1_000_000_000.0
 
     private var llamaContext: LlamaContext?
-    
-    // Updated to use your Resources folder path
+
     private var defaultModelUrl: URL? {
         Bundle.main.url(forResource: "tinyllama-1.1b-chat-v1.0-q2_k", withExtension: "gguf")
     }
@@ -53,22 +52,29 @@ class LlamaState: ObservableObject {
         }
     }
 
-
     enum LlamaModelError: Error {
         case modelNotLoaded
         case modelCorrupted
     }
 
-    func complete(text: String, _ tokenCallback: ((String) -> ())?) async throws {
+    func complete(
+        text: String,
+        temperature: Float = 0.7,
+        top_k: Int32 = 40,
+        top_p: Float = 0.9,
+        stop_if: ((String) -> Bool)? = nil,
+        onToken: ((String) -> Void)? = nil
+    ) async throws {
         guard let llamaContext else {
             print("❌ Error: LlamaContext is nil")
             throw LlamaModelError.modelNotLoaded
         }
 
         print("🧠 Starting completion with prompt:\n\(text)")
-
         try await llamaContext.completion_init(text: text)
 
+        answer = ""
+        interrupt = false
         var generatedTokens = 0
         let startTime = CACurrentMediaTime()
 
@@ -86,9 +92,20 @@ class LlamaState: ObservableObject {
                 break
             }
 
+            answer += result
             generatedTokens += 1
-            DispatchQueue.main.async {
-                tokenCallback?(result)
+
+            // Call stop condition
+            if let stop_if = stop_if, stop_if(answer) {
+                print("🛑 Stopped early due to stop_if")
+                break
+            }
+
+            // Emit token
+            if let onToken = onToken {
+                DispatchQueue.main.async {
+                    onToken(result)
+                }
             }
         }
 
